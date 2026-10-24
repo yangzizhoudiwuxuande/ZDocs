@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ZDocs</title>
+<style>
+  /* ===== 浅色模式变量 ===== */
+  :root { 
+    --sidebar-width: 280px; --toc-width: 220px; 
+    --bg: #ffffff; --text: #334155; --text-title: #0f172a; 
+    --border: #e2e8f0; --primary: #3b82f6; 
+    --sidebar-bg: #f8fafc; --hover-bg: #f1f5f9; 
+    --active-bg: #e0f2fe; --code-bg: #f1f5f9; --code-text: #eb5757;
+    --pre-bg: #1e1e2e; --pre-text: #cdd6f4;
+    --tip-bg: #e8f8f5; --tip-border: #2ecc71; --tip-text: #1e8e3e;
+    --warn-bg: #fff9e6; --warn-border: #f1c40f; --warn-text: #8a6d3b;
+    --api-bg: #282c34; --api-text: #abb2bf;
+    --details-bg: #f8fafc; --mark-bg: #fef08a; --mark-text: inherit;
+  }
+
+  /* ===== 暗夜模式变量 ===== */
+  [data-theme="dark"] {
+    --bg: #0f172a; --text: #cbd5e1; --text-title: #f8fafc; 
+    --border: #334155; --primary: #60a5fa; 
+    --sidebar-bg: #1e293b; --hover-bg: #334155; 
+    --active-bg: rgba(96, 165, 250, 0.15); --code-bg: #1e293b; --code-text: #f38ba8;
+    --pre-bg: #020617; --pre-text: #e2e8f0;
+    --tip-bg: rgba(46, 204, 113, 0.1); --tip-border: #2ecc71; --tip-text: #a6e3a1;
+    --w;arn-bg }
+: rgba  
+ (241, 196, . 15, 0.1); --warn-border: #f1c40f; --warn-text: #f9e2af;
+    --api-bg: #1e293b; --api-text: #cbd5e1;
+    --details-bg: #1e293b; --mark-bg: #ca8a04; --mark-text: #fff;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, sans-serif; color: var(--text); background: var(--bg); display: flex; min-height: 100vh; transition: background 0.3s, color 0.3s; }
+
+  /* ===== 移动端顶部栏 ===== */
+  .mobile-header {
+    display: none; position: fixed; top: 0; left: 0; right: 0; height: 56px;
+    background: var(--bg); border-bottom: 1px solid var(--border);
+    align-items: center; padding: 0 16px; z-index: 1000;
+    transition: background 0.3s, border 0.3s;
+  }
+  .mobile-menu-btn {
+    font-size: 1.5rem; background: none; border: none; color: var(--text-title);
+    cursor: pointer; padding: 8px; margin-right: 12px; -webkit-tap-highlight-color: transparent;
+  }
+  .mobile-title { font-weight: bold; font-size: 1.1rem; color: var(--text-title); flex: 1; }
+
+  /* ===== 侧边栏遮罩 ===== */
+  .overlay {
+    display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5); z-index: 1005; opacity: 0; transition: opacity 0.3s;
+  }
+  .overlay.show { display: block; opacity: 1; }
+
+  /* ===== 左侧边栏 ===== */
+  .sidebar { width: var(--sidebar-width); background: var(--sidebar-bg); border-right: 1px solid var(--border); position: fixed; top: 0; bottom: 0; left: 0; padding: 24px 16px; overflow-y: auto; user-select: none; -webkit-user-select: none; z-index: 1010; transition: transform 0.3s ease, background 0.3s; display: flex; flex-direction: columnsidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding: 0 8px; flex-shrink: 0; }
+  .site-title { font-size: 1.2rem; color: var(--text-title); font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: color 0.3s; }
+  
+  /* 主题切换按钮 */
+  .theme-toggle { background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 4px; border-radius: 6px; -webkit-tap-highlight-color: transparent; transition: background 0.2s; }
+  .theme-toggle:hover { background: var(--hover-bg); }
+
+  /* 搜索框 */
+  .search-container { padding: 0 8px 16px 8px; flex-shrink: 0; }
+  .search-input { width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.9rem; outline: none; background: var(--bg); color: var(--text); transition: all 0.3s; }
+  .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(96,165,250,0.2); }
+  .search-input::placeholder { color: #94a3b8; }
+
+  /* 导航区 */
+  .nav-scroll-area { flex: 1; overflow-y: auto; overflow-x: hidden; }
+  
+  .nav-group { margin-bottom: 8px; }
+  .nav-folder { display: flex; align-items: center; padding: 8px 12px; font-size: 0.95rem; font-weight: 600; color: var(--text-title); cursor: pointer; border-radius: 6px; transition: background 0.2s, color 0.3s; -webkit-tap-highlight-color: transparent; }
+  .nav-folder:hover { background: var(--hover-bg); }
+  .folder-arrow { display: inline-block; width: 16px; font-size: 0.75rem; transition: transform 0.2s; text-align: center; margin-right: 6px; color: #64748b; }
+  .nav-group.open .folder-arrow { transform: rotate(90deg); }
+  
+  .nav-children { display: none; margin-top: 4px; padding-left: 12px; border-left: 1px solid var(--border); margin-left: 16px; transition: border 0.3s; }
+  .nav-group.open .nav-children { display: block; }
+  
+  .nav-item { display: block; padding: 6px 12px; color: var(--text); text-decoration: none; font-size: 0.9rem; border-radius: 6px; margin-bottom: 2px; cursor: pointer; transition: all 0.2s; -webkit-tap-highlight-color: transparent; }
+  .nav-item:hover { background: var(--hover-bg); }
+  .nav-item.active { background: var(--active-bg); color: var(--primary); font-weight: 600; }
+
+  /* 搜索高亮 */
+  mark { background-color: var(--mark-bg); color: var(--mark-text); border-radius: 2px; padding: 0 2px; font-weight: bold; }
+
+  /* ===== 中间内容区 ===== */
+  .main-content { margin-left: var(--sidebar-width); margin-right: var(--toc-width); flex: 1; padding: 40px 60px; max-width: 800px; }
+  .doc-body h1 { font-size: 2.2rem; color: var(--text-title); margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 16px; transition: color 0.3s, border 0.3s; }
+  .doc-body h2 { font-size: 1.5rem; color: var(--text-title); margin: 36px 0 16px; transition: color 0.3s; }
+  .doc-body h3 { font-size: 1.2rem; color: var(--text-title); margin: 24px 0 12px; transition: color 0.3s; }
+  .doc-body p { line-height: 1.8; margin-bottom: 16px; }
+  .doc-body code { background: var(--code-bg); padding: 2px 6px; border-radius: 4px; color: var(--code-text); font-family: 'SF Mono', monospace; font-size: 0.9em; transition: all 0.3s; }
+  .doc-body pre { background: var(--pre-bg); color: var(--pre-text); padding: 16px; border-radius: 8px; overflow-x: auto; margin: 20px 0; border: 1px solid var(--border); transition: all 0.3s; }
+  .doc-body pre code { background: transparent; color: inherit; padding: 0; }
+  .doc-body ul { padding-left: 20px; margin-bottom: 16px; line-height: 1.8; }
+  
+  .zdoc-admonition { padding: 16px; border-left: 4px solid; border-radius: 6px; margin: 24px 0; transition: all 0.3s; }
+  .zdoc-admonition strong { display: block; margin-bottom: 6px; }
+  .zdoc-tip { background: var(--tip-bg); border-color: var(--tip-border); color: var(--tip-text); }
+  .zdoc-warning { background: var(--warn-bg); border-color: var(--warn-border); color: var(--warn-text); }
+  .zdoc-api { background: var(--api-bg); color: var(--api-text); padding: 16px; border-radius: 8px; margin: 24px 0; transition: all 0.3s; }
+  .zdoc-api-method { background: var(--primary); color: #fff; padding: 2px 8px; border-radius: 4px; font-weight: bold; margin-right: 10px; }
+  .zdoc-details { border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin: 24px 0; background: var(--details-bg); transition: all 0.3s; }
+  .zdoc-code-group { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin: 24px 0; transition: all 0.3s; }
+  .zdoc-cg-header { background: var(--sidebar-bg); padding: 10px 16px; border-bottom: 1px solid var(--border); font-size: 0.85rem; transition: all 0.3s; }
+  
+  /* ===== 右侧目录 ===== */
+  .toc { width: var(--toc-width); position: fixed; top: 0; bottom: 0; right: 0; padding: 40px 20px; }
+  .toc-list { list-style: none; border-left: 1px solid var(--border); transition: border 0.3s; }
+  .toc-list a { display: block; padding: 4px 16px; color: #64748b; text-decoration: none; font-size: 0.85rem; border-left: 2px solid transparent; margin-left: -1px; transition: all 0.2s; }
+  .toc-list a:hover { color: var(--primary); }
+  .toc-list a.active { color: var(--primary); border-left-color: var(--primary); font-weight: 500; }
+  .toc-list .toc-h3 { padding-left: 32px; }
+
+  /* ===== 底部翻页 ===== */
+  .doc-footer { margin-top: 60px; padding-top: 24px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; gap: 16px; transition: border 0.3s; }
+  .nav-btn { flex: 1; display: flex; flex-direction: column; padding: 16px; border: 1px solid var(--border); border-radius: 8px; background: transparent; color: var(--text); font-family: inherit; font-size: inherit; cursor: pointer; text-align: left; -webkit-tap-highlight-color: transparent; touch-action: manipulation; transition: all 0.3s; }
+  .nav-btn:hover { border-color: var(--primary); background: var(--hover-bg); }
+  .nav-btn.next { text-align: right; }
+  .nav-btn.empty { visibility: hidden; pointer-events: none; }
+  .nav-btn .nav-label { font-size: 0.8rem; color: #94a3b8; margin-bottom: 4px; pointer-events: none; }
+  .nav-btn .nav-title { font-weight: 600; color: var(--primary); font-size: 0.95rem; pointer-events: none; }
+  
+  /* ===== 响应式 ===== */
+  @media (max-width: 900px) { 
+    .mobile-header { display: flex; }
+    .sidebar { transform: translateX(-100%); }
+    .sidebar.show { transform: translateX(0); }
+    .toc { display: none; }
+    .main-content { margin: 0; padding: 80px 20px 20px 20px; max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="mobile-header">
+  <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+  <div class="mobile-title" id="mobile-site-title">📚 ZDocs</div>
+  <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+</div>
+
+<div class="overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="site-title" id="site-title">📚 加载中...</div>
+    <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()">🌙</button>
+  </div>
+  
+  <div class="search-container">
+    <input type="text" id="search-input" class="search-input" placeholder="🔍 搜索文档..." autocomplete="off">
+  </div>
+
+  <div class="nav-scroll-area" id="sidebar-nav">
+    <div style="color: #94a3b8; font-size: 0.9rem; padding-left: 8px;">加载目录中...</div>
+  </div>
+</aside>
+
+<main class="main-content">
+  <div id="doc-content" class="doc-body"></div>
+  <div class="doc-footer" id="doc-footer"></div>
+</main>
+
+<aside class="toc">
+  <div style="font-size: 0.85rem; font-weight: 600; color: #64748b; margin-bottom: 16px;">本页目录</div>
+  <ul class="toc-list" id="toc-list"></ul>
+</aside>
+
+<script>
+// ==========================================
+// 1. 主题切换逻辑
+// ==========================================
+function initTheme() {
+  const savedTheme = localStorage.getItem('zdocs-theme') || 'light';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  updateThemeIcon(savedTheme);
+}
+
+function toggleTheme() {
+  const currentTheme = document.documentElement.getAttribute('data-theme');
+  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', newTheme);
+  localStorage.setItem('zdocs-theme', newTheme);
+  updateThemeIcon(newTheme);
+}
+
+function updateThemeIcon(theme) {
+  const icons = document.querySelectorAll('.theme-toggle');
+  icons.forEach(btn => { btn.textContent = theme === 'dark' ? '☀️' : '🌙'; });
+}
+
+initTheme();
+
+// ==========================================
+// 2. 解析引擎
+// ==========================================
+function escapeText(text) { return text.replace(/\^([\/\\?~\-*$|!<\[\]_])/g, (m, p1) => `\x00ESC_${p1.charCodeAt(0)}\x00`); }
+function unescapeText(text) { return text.replace(/\x00ESC_(\d+)\x00/g, (m, p1) => String.fromCharCode(parseInt(p1, 10))); }
+function parseInline(text) {
+  let res = escapeText(text);
+  res = res.replace(/\?(.*?)\?/g, '<strong>$1</strong>');
+  res = res.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  res = res.replace(/\\(.*?)\\/g, '<i>$1</i>');
+  res = res.replace(/_(.*?)_/g, '<u>$1</u>');
+  res = res.replace(/-(.*?)-/g, '<del>$1</del>');
+  res = res.replace(/~(.*?)~/g, '<code>$1</code>');
+  res = res.replace(/\*(.*?)\*\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>');
+  return unescapeText(res);
+}
+function renderZDocs(text) {
+  let body = text.replace(/\r\n/g, '\n'); let html = []; let lines = body.split('\n'); let i = 0;
+  if (lines[0] && lines[0].trim() === '---') { i = 1; while (i < lines.length && lines[i].trim() !== '---') i++; if (i < lines.length) i++; }
+  while (i < lines.length) {
+    let line = lines[i];
+    let match = line.match(/^:::\s*([\w-]+)(.*)$/);
+    if (match) {
+      let type = match[1]; let argsStr = match[2].trim(); let label = '', arg = argsStr;
+      let lm = argsStr.match(/\[(.*?)\]/); if (lm) { label = lm[1]; arg = argsStr.replace(lm[0], '').trim(); }
+      let contentLines = [], inCodeBlock = false; i++;
+      while (i < lines.length) {
+        let currLine = lines[i].trim();
+        if (currLine.startsWith('```') || currLine.startsWith('~')) inCodeBlock = !inCodeBlock;
+        if (!inCodeBlock && currLine === ':::') break;
+        contentLines.push(lines[i]); i++;
+      }
+      i++; let innerText = contentLines.join('\n');
+      if (type === 'tip') html.push(`<div class="zdoc-admonition zdoc-tip"><strong>💡 提示</strong><p>${parseInline(innerText)}</p></div>`);
+      else if (type === 'warning') html.push(`<div class="zdoc-admonition zdoc-warning"><strong>⚠️ 注意</strong><p>${parseInline(innerText)}</p></div>`);
+      else if (type === 'api') html.push(`<div class="zdoc-api"><div class="zdoc-api-method">${arg}</div>${parseInline(innerText)}</div>`);
+      else if (type === 'details') html.push(`<details class="zdoc-details"><summary>${arg}</summary><div style="margin-top:10px;">${parseInline(innerText)}</div></details>`);
+      else if (type === 'code-group') {
+        let cleanCode = innerText.replace(/^~[a-zA-Z0-9_]*$/gm, '').replace(/^```[a-zA-Z0-9_]*$/gm, '').replace(/^```$/gm, '').trim();
+        html.push(`<div class="zdoc-code-group"><div class="zdoc-cg-header"><span>${label || 'Code'}</span></div><pre><code>${cleanCode}</code></pre></div>`);
+      }
+      continue;
+    }
+    if (line.startsWith('//// ')) html.push(`<h4>${parseInline(line.substring(5))}</h4>`);
+    else if (line.startsWith('/// ')) { let t = parseInline(line.substring(4)); let id = 'h-' + t.replace(/\s+/g, '-').toLowerCase(); html.push(`<h3 id="${id}">${t}</h3>`); }
+    else if (line.startsWith('// ')) { let t = parseInline(line.substring(3)); let id = 'h-' + t.replace(/\s+/g, '-').toLowerCase(); html.push(`<h2 id="${id}">${t}</h2>`); }
+    else if (line.startsWith('/ ')) html.push(`<h1>${parseInline(line.substring(2))}</h1>`);
+    else if (line.startsWith('! ')) {
+      let items = []; while (i < lines.length && lines[i].startsWith('! ')) { items.push(`<li>${parseInline(lines[i].substring(2))}</li>`); i++; }
+      html.push(`<ul>${items.join('')}</ul>`); continue;
+    }
+    else if (line.trim().startsWith('~')) {
+       let lang = line.trim().substring(1); let code = []; i++;
+       while(i < lines.length && lines[i].trim() !== '~') { code.push(lines[i]); i++; }
+       html.push(`<pre><code>${code.join('\n')}</code></pre>`);
+    }
+    else if (line.trim()) html.push(`<p>${parseInline(line)}</p>`);
+    i++;
+  }
+  return html.join('\n');
+}
+
+// ==========================================
+// 3. 页面逻辑
+// ==========================================
+const sidebarNav = document.getElementById('sidebar-nav');
+const docContent = document.getElementById('doc-content');
+const tocList = document.getElementById('toc-list');
+const docFooter = document.getElementById('doc-footer');
+const siteTitleEl = document.getElementById('site-title');
+const searchInput = document.getElementById('search-input');
+
+let docsData = [];
+let originalFileList = [];
+let currentIndex = 0;
+
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  const isOpen = sidebar.classList.contains('show');
+  if (isOpen) {
+    sidebar.classList.remove('show');
+    overlay.classList.remove('show');
+  } else {
+    sidebar.classList.add('show');
+    overlay.classList.add('show');
+  }
+}
+
+async function fetchDocs() {
+  try {
+    try {
+      const titleRes = await fetch('./title.html');
+      if (titleRes.ok) {
+        const titleText = await titleRes.text();
+        const titleMatch = titleText.match(/const\s+siteTitle\s*=\s*["']([^"']+)["']/);
+        if (titleMatch) {
+          siteTitleEl.textContent = titleMatch[1];
+          document.getElementById('mobile-site-title').textContent = titleMatch[1];
+        }
+      }
+    } catch(e) { 
+      siteTitleEl.textContent = "📚 ZDocs"; 
+      document.getElementById('mobile-site-title').textContent = "📚 ZDocs"; 
+    }
+
+    const res = await fetch('./files.html');
+    if (!res.ok) throw new Error('缺少 files.html');
+    const htmlText = await res.text();
+    const match = htmlText.match(/const\s+myDocFiles\s*=\s*(\[[\s\S]*?\]);/);
+    if (!match) throw new Error('files.html 格式不对');
+    
+    originalFileList = new Function('return ' + match[1])();
+    if (!originalFileList || originalFileList.length === 0) {
+      docContent.innerHTML = `<h1>欢迎使用 ZDocs</h1><p>你的文件列表是空的。请在 files.html 中添加 .zdoc 文件，并把它们放入 docs 文件夹中。</p>`;
+      sidebarNav.innerHTML = `<div style="color: #94a3b8; font-size: 0.85rem; padding: 12px; text-align: center;">暂无文档</div>`;
+      return;
+    }
+    
+    const promises = originalFileList.map(file => fetch('./docs/' + file).then(r => {
+      if (!r.ok) throw new Error(`找不到 docs/${file}`);
+      return r.text();
+    }));
+    const texts = await Promise.all(promises);
+    
+    docsData = texts.map((text, i) => {
+      let titleMatch = text.match(/title:\s*(.*)/);
+      let title = titleMatch ? titleMatch[1].trim() : originalFileList[i].split('/').pop().replace('.zdoc', '');
+      return { id: `doc-${i}`, title: title, content: text, path: originalFileList[i] };
+    });
+
+    renderSidebarTree();
+    loadPage(0);
+  } catch (e) {
+    sidebarNav.innerHTML = `<div style="color: red; font-size: 0.85rem; padding: 10px;">报错：${e.message}</div>`;
+  }
+}
+
+function renderSidebarTree() {
+  sidebarNav.innerHTML = '';
+  const tree = {};
+
+  originalFileList.forEach((path, index) => {
+    const parts = path.split('/');
+    let current = tree;
+    for (let i = 0; i < parts.length - 1; i++) {
+      if (!current[parts[i]]) current[parts[i]] = { _isFolder: true, _children: {} };
+      current = current[parts[i]]._children;
+    }
+    const fileName = parts[parts.length - 1];
+    current[fileName] = { _isFolder: false, _index: index, _name: docsData[index].title };
+  });
+
+  function buildDOM(node, parentEl) {
+    for (const key in node) {
+      const item = node[key];
+      if (item._isFolder) {
+        const groupEl = document.createElement('div');
+        groupEl.className = 'nav-group open';
+        const folderEl = document.createElement('div');
+        folderEl.className = 'nav-folder';
+        folderEl.innerHTML = `<span class="folder-arrow">❯</span>${key}`;
+        folderEl.onclick = () => groupEl.classList.toggle('open');
+        const childrenEl = document.createElement('div');
+        childrenEl.className = 'nav-children';
+        groupEl.appendChild(folderEl);
+        groupEl.appendChild(childrenEl);
+        parentEl.appendChild(groupEl);
+        buildDOM(item._children, childrenEl);
+      } else {
+        const a = document.createElement('a');
+        a.className = 'nav-item';
+        a.textContent = item._name;
+        a.dataset.index = item._index;
+        a.onclick = () => {
+          loadPage(item._index);
+          if (window.innerWidth <= 900) toggleSidebar();
+        };
+        parentEl.appendChild(a);
+      }
+    }
+  }
+
+  buildDOM(tree, sidebarNav);
+  updateActiveNav();
+}
+
+function updateActiveNav() {
+  document.querySelectorAll('.nav-item').forEach(el => {
+    if (parseInt(el.dataset.index) === currentIndex) el.classList.add('active');
+    else el.classList.remove('active');
+  });
+}
+
+function loadPage(index) {
+  if (index < 0 || index >= docsData.length) return;
+  currentIndex = index;
+  const doc = docsData[index];
+  
+  updateActiveNav();
+
+  docContent.innerHTML = renderZDocs(doc.content);
+  
+  tocList.innerHTML = '';
+  docContent.querySelectorAll('h2, h3').forEach(h => {
+    const li = document.createElement('li');
+    li.innerHTML = `<a href="#${h.id}" class="${h.tagName === 'H3' ? 'toc-h3' : ''}">${h.textContent}</a>`;
+    tocList.appendChild(li);
+  });
+
+  generateFooter(index);
+  window.scrollTo(0, 0);
+}
+
+function generateFooter(index) {
+  docFooter.innerHTML = '';
+  
+  if (index > 0) {
+    const prev = docsData[index - 1];
+    const btn = document.createElement('button');
+    btn.className = 'nav-btn prev';
+    btn.dataset.target = index - 1;
+    btn.innerHTML = `<span class="nav-label">← 上一篇</span><span class="nav-title">${prev.title}</span>`;
+    docFooter.appendChild(btn);
+  } else { 
+    docFooter.innerHTML += `<div class="nav-btn empty"></div>`; 
+  }
+
+  if (index < docsData.length - 1) {
+    const next = docsData[index + 1];
+    const btn = document.createElement('button');
+    btn.className = 'nav-btn next';
+    btn.dataset.target = index + 1;
+    btn.innerHTML = `<span class="nav-label">下一篇 →</span><span class="nav-title">${next.title}</span>`;
+    docFooter.appendChild(btn);
+  } else { 
+    docFooter.innerHTML += `<div class="nav-btn empty"></div>`; 
+  }
+}
+
+docFooter.addEventListener('click', function(e) {
+  const btn = e.target.closest('.nav-btn');
+  if (btn && btn.dataset.target !== undefined) {
+    loadPage(parseInt(btn.dataset.target, 10));
+  }
+});
+
+// ==========================================
+// 4. 搜索
+// ==========================================
+let isComposing = false;
+searchInput.addEventListener('compositionstart', () => { isComposing = true; });
+searchInput.addEventListener('compositionend', (e) => { isComposing = false; handleSearch(e.target.value); });
+searchInput.addEventListener('input', (e) => { if (!isComposing) handleSearch(e.target.value); });
+
+function handleSearch(inputVal) {
+  const query = inputVal.trim().toLowerCase();
+  if (!query) { renderSidebarTree(); return; }
+
+  const results = [];
+  docsData.forEach(doc => {
+    const matchTitle = doc.title.toLowerCase().includes(query);
+    const matchContent = doc.content.toLowerCase().includes(query);
+    if (matchTitle || matchContent) results.push({ doc, matchTitle, matchContent });
+  });
+
+  sidebarNav.innerHTML = '';
+  if (results.length === 0) {
+    sidebarNav.innerHTML = `<div style="color: #94a3b8; font-size: 0.85rem; padding: 12px; text-align: center;">未找到相关结果</div>`;
+    return;
+  }
+
+  results.forEach(item => {
+    const doc = item.doc; const index = docsData.indexOf(doc);
+    const a = document.createElement('a');
+    a.className = 'nav-item'; a.dataset.index = index;
+    
+    let displayTitle = doc.title;
+    if (item.matchTitle) {
+      displayTitle = doc.title.replace(new RegExp(`(${escapeRegExp(inputVal)})`, 'gi'), '<mark>$1</mark>');
+    }
+    a.innerHTML = `<div style="font-weight: 600; margin-bottom: 4px;">${displayTitle}</div>`;
+    
+    if (item.matchContent) {
+      const contentLower = doc.content.toLowerCase();
+      const matchIndex = contentLower.indexOf(query);
+      const start = Math.max(0, matchIndex - 15);
+      const end = Math.min(doc.content.length, matchIndex + query.length + 25);
+      let snippet = doc.content.substring(start, end).replace(/\n/g, ' ');
+      if (start > 0) snippet = '...' + snippet;
+      if (end < doc.content.length) snippet = snippet + '...';
+      a.innerHTML += `<div style="font-size: 0.8rem; color: #94a3b8; font-weight: normal; line-height: 1.4;">${snippet.replace(new RegExp(`(${escapeRegExp(inputVal)})`, 'gi'), '<mark>$1</mark>')}</div>`;
+    }
+    
+    a.onclick = () => { loadPage(index); if (window.innerWidth <= 900) toggleSidebar(); };
+    sidebarNav.appendChild(a);
+  });
+  updateActiveNav();
+}
+
+function escapeRegExp(string) { return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+fetchDocs();
+</script>
+</body>
+</html>
