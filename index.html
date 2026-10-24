@@ -27,9 +27,7 @@
     --active-bg: rgba(96, 165, 250, 0.15); --code-bg: #1e293b; --code-text: #f38ba8;
     --pre-bg: #020617; --pre-text: #e2e8f0;
     --tip-bg: rgba(46, 204, 113, 0.1); --tip-border: #2ecc71; --tip-text: #a6e3a1;
-    --w;arn-bg }
-: rgba  
- (241, 196, . 15, 0.1); --warn-border: #f1c40f; --warn-text: #f9e2af;
+    --warn-bg: rgba(241, 196, 15, 0.1); --warn-border: #f1c40f; --warn-text: #f9e2af;
     --api-bg: #1e293b; --api-text: #cbd5e1;
     --details-bg: #1e293b; --mark-bg: #ca8a04; --mark-text: #fff;
   }
@@ -58,7 +56,9 @@
   .overlay.show { display: block; opacity: 1; }
 
   /* ===== 左侧边栏 ===== */
-  .sidebar { width: var(--sidebar-width); background: var(--sidebar-bg); border-right: 1px solid var(--border); position: fixed; top: 0; bottom: 0; left: 0; padding: 24px 16px; overflow-y: auto; user-select: none; -webkit-user-select: none; z-index: 1010; transition: transform 0.3s ease, background 0.3s; display: flex; flex-direction: columnsidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding: 0 8px; flex-shrink: 0; }
+  .sidebar { width: var(--sidebar-width); background: var(--sidebar-bg); border-right: 1px solid var(--border); position: fixed; top: 0; bottom: 0; left: 0; padding: 24px 16px; overflow-y: auto; user-select: none; -webkit-user-select: none; z-index: 1010; transition: transform 0.3s ease, background 0.3s; display: flex; flex-direction: column; }
+  
+  .sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding: 0 8px; flex-shrink: 0; }
   .site-title { font-size: 1.2rem; color: var(--text-title); font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: color 0.3s; }
   
   /* 主题切换按钮 */
@@ -199,10 +199,11 @@ function updateThemeIcon(theme) {
 initTheme();
 
 // ==========================================
-// 2. 解析引擎
+// 2. 解析引擎 (包含内部/外部链接处理)
 // ==========================================
 function escapeText(text) { return text.replace(/\^([\/\\?~\-*$|!<\[\]_])/g, (m, p1) => `\x00ESC_${p1.charCodeAt(0)}\x00`); }
 function unescapeText(text) { return text.replace(/\x00ESC_(\d+)\x00/g, (m, p1) => String.fromCharCode(parseInt(p1, 10))); }
+
 function parseInline(text) {
   let res = escapeText(text);
   res = res.replace(/\?(.*?)\?/g, '<strong>$1</strong>');
@@ -211,9 +212,18 @@ function parseInline(text) {
   res = res.replace(/_(.*?)_/g, '<u>$1</u>');
   res = res.replace(/-(.*?)-/g, '<del>$1</del>');
   res = res.replace(/~(.*?)~/g, '<code>$1</code>');
-  res = res.replace(/\*(.*?)\*\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>');
+  
+  // 处理链接：如果是 .zdoc 结尾，则作为内部链接处理；否则外部新窗口打开
+  res = res.replace(/\*(.*?)\*\((.*?)\)/g, (match, linkText, url) => {
+    if (url.endsWith('.zdoc')) {
+      return `<a href="${url}" class="internal-link">${linkText}</a>`;
+    }
+    return `<a href="${url}" target="_blank" rel="noopener noreferrer">${linkText}</a>`;
+  });
+  
   return unescapeText(res);
 }
+
 function renderZDocs(text) {
   let body = text.replace(/\r\n/g, '\n'); let html = []; let lines = body.split('\n'); let i = 0;
   if (lines[0] && lines[0].trim() === '---') { i = 1; while (i < lines.length && lines[i].trim() !== '---') i++; if (i < lines.length) i++; }
@@ -398,8 +408,28 @@ function loadPage(index) {
   const doc = docsData[index];
   
   updateActiveNav();
-
   docContent.innerHTML = renderZDocs(doc.content);
+  
+  // 拦截内部 .zdoc 链接的点击事件
+  docContent.querySelectorAll('a.internal-link').forEach(a => {
+    a.onclick = (e) => {
+      e.preventDefault();
+      const targetHref = a.getAttribute('href');
+      
+      // 在文档库中查找对应的文件 (匹配结尾，兼容相对路径)
+      const targetIndex = docsData.findIndex(d => d.path.endsWith(targetHref));
+      
+      if (targetIndex !== -1) {
+        loadPage(targetIndex);
+        // 移动端点击后自动收起侧边栏
+        if (window.innerWidth <= 900 && document.getElementById('sidebar').classList.contains('show')) {
+          toggleSidebar();
+        }
+      } else {
+        alert(`找不到目标文档：${targetHref}\n请检查文件名拼写是否正确，或者是否已在 files.html 中登记。`);
+      }
+    };
+  });
   
   tocList.innerHTML = '';
   docContent.querySelectorAll('h2, h3').forEach(h => {
