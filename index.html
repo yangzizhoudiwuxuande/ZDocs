@@ -40,10 +40,15 @@
   .overlay.show { display: block; opacity: 1; }
   
   .sidebar { width: var(--sidebar-width); background: var(--sidebar-bg); border-right: 1px solid var(--border); position: fixed; top: 0; bottom: 0; left: 0; padding: 24px 16px; overflow-y: auto; user-select: none; z-index: 1010; transition: transform 0.3s ease, background 0.3s; display: flex; flex-direction: column; }
-  .sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding: 0 8px; flex-shrink: 0; }
-  .site-title { font-size: 1.2rem; color: var(--text-title); font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  
+  .sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding: 0 8px; flex-shrink: 0; gap: 8px; }
+  .site-title { font-size: 1.2rem; color: var(--text-title); font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
+  
+  .toolbar-actions { display: flex; align-items: center; gap: 4px; }
+  .lang-select { border: 1px solid var(--border); background: var(--bg); color: var(--text); border-radius: 4px; padding: 2px 4px; outline: none; font-size: 0.8rem; cursor: pointer; font-weight: bold; }
   .theme-toggle { background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 4px; border-radius: 6px; }
   .theme-toggle:hover { background: var(--hover-bg); }
+  
   .search-container { padding: 0 8px 16px 8px; flex-shrink: 0; }
   .search-input { width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.9rem; outline: none; background: var(--bg); color: var(--text); transition: all 0.3s; }
   .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(96,165,250,0.2); }
@@ -70,7 +75,6 @@
   .doc-body pre code { background: transparent; color: inherit; padding: 0; }
   .doc-body ul { padding-left: 20px; margin-bottom: 16px; line-height: 1.8; }
   
-  /* ===== 补上的表格样式 ===== */
   .doc-body table { border-collapse: collapse; width: 100%; margin: 24px 0; font-size: 0.95em; }
   .doc-body th, .doc-body td { border: 1px solid var(--border); padding: 10px 14px; text-align: left; vertical-align: top; }
   .doc-body th { background-color: var(--sidebar-bg); color: var(--text-title); font-weight: 600; }
@@ -87,7 +91,7 @@
   .zdoc-cg-header { background: var(--sidebar-bg); padding: 10px 16px; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
   .toc { width: var(--toc-width); position: fixed; top: 0; bottom: 0; right: 0; padding: 40px 20px; }
   .toc-list { list-style: none; border-left: 1px solid var(--border); }
-  .toc-list a { display: block; padding: 4px 16px; color: #64748b; text-decoration: none; font-size: 0.85rem; border-left: 2px solid transparent; margin-left: -1px; transition: all 0.2s; }
+  .toc-list a { display: block; padding: 4px 16px; color: #64748b; text-decoration: none; font-size: 0.85rem; border-left: 2px solid transparent; margin-left: -1px; transition: all 0.2s; cursor: pointer; }
   .toc-list a:hover { color: var(--primary); }
   .toc-list a.active { color: var(--primary); border-left-color: var(--primary); font-weight: 500; }
   .toc-list .toc-h3 { padding-left: 32px; }
@@ -96,8 +100,10 @@
   .nav-btn:hover { border-color: var(--primary); background: var(--hover-bg); }
   .nav-btn.next { text-align: right; }
   .nav-btn.empty { visibility: hidden; pointer-events: none; }
-  .nav-btn .nav-label { font-size: 0.8rem; color: #94a3b8; margin-bottom: 4px; pointer-events: none; }
-  .nav-btn .nav-title { font-weight: 600; color: var(--primary); font-size: 0.95rem; pointer-events: none; }
+  .nav-btn * { pointer-events: none; }
+  .nav-btn .nav-label { font-size: 0.8rem; color: #94a3b8; margin-bottom: 4px; }
+  .nav-btn .nav-title { font-weight: 600; color: var(--primary); font-size: 0.95rem; }
+  
   @media (max-width: 900px) { 
     .mobile-header { display: flex; }
     .sidebar { transform: translateX(-100%); }
@@ -112,6 +118,15 @@
 <div class="mobile-header">
   <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
   <div class="mobile-title" id="mobile-site-title">📚 ZDocs</div>
+  <select id="mobile-lang-select" class="lang-select" onchange="changeLanguage(this.value)">
+    <option value="zh-CN">简</option>
+    <option value="zh-TW">繁</option>
+    <option value="en">EN</option>
+    <option value="fr">FR</option>
+    <option value="de">DE</option>
+    <option value="ru">RU</option>
+    <option value="es">ES</option>
+  </select>
   <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
 </div>
 
@@ -120,10 +135,21 @@
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-header">
     <div class="site-title" id="site-title">📚 加载中...</div>
-    <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()">🌙</button>
+    <div class="toolbar-actions">
+      <select id="lang-select" class="lang-select" onchange="changeLanguage(this.value)">
+        <option value="zh-CN">简</option>
+        <option value="zh-TW">繁</option>
+        <option value="en">EN</option>
+        <option value="fr">FR</option>
+        <option value="de">DE</option>
+        <option value="ru">RU</option>
+        <option value="es">ES</option>
+      </select>
+      <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()">🌙</button>
+    </div>
   </div>
   <div class="search-container">
-    <input type="text" id="search-input" class="search-input" placeholder="🔍 搜索文档..." autocomplete="off">
+    <input type="text" id="search-input" class="search-input" placeholder="搜索文档..." autocomplete="off">
   </div>
   <div class="nav-scroll-area" id="sidebar-nav">
     <div style="color: #94a3b8; font-size: 0.9rem; padding-left: 8px;">加载目录中...</div>
@@ -136,11 +162,31 @@
 </main>
 
 <aside class="toc">
-  <div style="font-size: 0.85rem; font-weight: 600; color: #64748b; margin-bottom: 16px;">本页目录</div>
+  <div class="toc-title" id="toc-title">本页目录</div>
   <ul class="toc-list" id="toc-list"></ul>
 </aside>
 
 <script>
+const uiTexts = {
+  'zh-CN': { search: '🔍 搜索文档...', toc: '本页目录', prev: '← 上一篇', next: '下一篇 →', noDocs: '暂无文档', error: '报错', welcomeTitle: '欢迎使用 ZDocs', welcomeText: '你的文件列表是空的。' },
+  'zh-TW': { search: '🔍 搜尋文件...', toc: '本頁目錄', prev: '← 上一篇', next: '下一篇 →', noDocs: '暫無文件', error: '報錯', welcomeTitle: '歡迎使用 ZDocs', welcomeText: '你的文件列表是空的。' },
+  'en': { search: '🔍 Search docs...', toc: 'On This Page', prev: '← Previous', next: 'Next →', noDocs: 'No documents', error: 'Error', welcomeTitle: 'Welcome to ZDocs', welcomeText: 'Your document list is empty.' },
+  'fr': { search: '🔍 Rechercher...', toc: 'Sur cette page', prev: '← Précédent', next: 'Suivant →', noDocs: 'Aucun document', error: 'Erreur', welcomeTitle: 'Bienvenue sur ZDocs', welcomeText: 'Votre liste de documents est vide.' },
+  'de': { search: '🔍 Suchen...', toc: 'Auf dieser Seite', prev: '← Zurück', next: 'Weiter →', noDocs: 'Keine Dokumente', error: 'Fehler', welcomeTitle: 'Willkommen bei ZDocs', welcomeText: 'Ihre Dokumentenliste ist leer.' },
+  'ru': { search: '🔍 Поиск...', toc: 'Содержание', prev: '← Назад', next: 'Вперед →', noDocs: 'Нет документов', error: 'Ошибка', welcomeTitle: 'Добро пожаловать в ZDocs', welcomeText: 'Ваш список документов пуст.' },
+  'es': { search: '🔍 Buscar...', toc: 'En esta página', prev: '← Anterior', next: 'Siguiente →', noDocs: 'Sin documentos', error: 'Error', welcomeTitle: 'Bienvenido a ZDocs', welcomeText: 'Tu lista de documentos está vacía.' }
+};
+
+let currentLang = localStorage.getItem('zdocs-lang') || 'zh-CN';
+
+function updateUI() {
+  const texts = uiTexts[currentLang] || uiTexts['zh-CN'];
+  document.getElementById('search-input').placeholder = texts.search;
+  document.getElementById('toc-title').textContent = texts.toc;
+  document.getElementById('lang-select').value = currentLang;
+  document.getElementById('mobile-lang-select').value = currentLang;
+}
+
 function initTheme() {
   const savedTheme = localStorage.getItem('zdocs-theme') || 'light';
   document.documentElement.setAttribute('data-theme', savedTheme);
@@ -170,7 +216,7 @@ function parseInline(text) {
   res = res.replace(/-(.*?)-/g, '<del>$1</del>');
   res = res.replace(/~(.*?)~/g, '<code>$1</code>');
   res = res.replace(/\*(.*?)\*\((.*?)\)/g, (match, text, url) => {
-    if (url.endsWith('.zdoc')) return `<a href="${url}" class="internal-link">${text}</a>`;
+    if (url.endsWith('.zdoc')) return `<a href="javascript:void(0)" data-zdoc="${url}" class="internal-link">${text}</a>`;
     return `<a href="${url}" target="_blank" rel="noopener noreferrer">${text}</a>`;
   });
   return unescapeText(res);
@@ -183,7 +229,6 @@ function renderZDocs(text) {
   while (i < lines.length) {
     let line = lines[i];
     
-    // 解析 ZDocs 容器
     let match = line.match(/^:::\s*([\w-]+)(.*)$/);
     if (match) {
       let type = match[1]; let argsStr = match[2].trim(); let label = '', arg = argsStr;
@@ -207,14 +252,12 @@ function renderZDocs(text) {
       continue;
     }
 
-    // 👇 补上的表格解析逻辑
     if (line.trim().startsWith('|') && i + 1 < lines.length && /^-{3,}$/.test(lines[i+1].trim())) {
       let headers = line.split('|').slice(1, -1).map(s => s.trim());
       let htmlTable = ['<table><thead><tr>'];
       headers.forEach(h => htmlTable.push(`<th>${parseInline(h)}</th>`));
       htmlTable.push('</tr></thead><tbody>');
-      
-      i += 2; // 跳过表头和分割线
+      i += 2;
       while (i < lines.length && lines[i].trim().startsWith('|')) {
         let row = lines[i].split('|').slice(1, -1).map(s => s.trim());
         htmlTable.push('<tr>');
@@ -255,7 +298,6 @@ const searchInput = document.getElementById('search-input');
 
 let docsData = [];
 let originalFileList = [];
-let currentIndex = 0;
 
 function toggleSidebar() {
   const sidebar = document.getElementById('sidebar');
@@ -263,6 +305,29 @@ function toggleSidebar() {
   const isOpen = sidebar.classList.contains('show');
   if (isOpen) { sidebar.classList.remove('show'); overlay.classList.remove('show'); }
   else { sidebar.classList.add('show'); overlay.classList.add('show'); }
+}
+
+async function changeLanguage(lang) {
+  if (lang === currentLang) return;
+  currentLang = lang;
+  localStorage.setItem('zdocs-lang', lang);
+  updateUI();
+  await fetchDocs();
+}
+
+async function fetchDocContent(basePath) {
+  if (currentLang !== 'zh-CN') {
+    const ext = '.zdoc';
+    const base = basePath.endsWith(ext) ? basePath.slice(0, -ext.length) : basePath;
+    const langPath = `./docs/${base}.${currentLang}.zdoc`;
+    try {
+      const res = await fetch(langPath);
+      if (res.ok) return await res.text();
+    } catch(e) {}
+  }
+  const defaultRes = await fetch('./docs/' + basePath);
+  if (!defaultRes.ok) throw new Error(`找不到 docs/${basePath}`);
+  return await defaultRes.text();
 }
 
 async function fetchDocs() {
@@ -285,38 +350,34 @@ async function fetchDocs() {
     const res = await fetch('./files.html');
     if (!res.ok) throw new Error('缺少 files.html');
     const htmlText = await res.text();
-    
     const match = htmlText.match(/const\s+myDocFiles\s*=\s*(\[[\s\S]*?\]);?/);
     if (!match) throw new Error('files.html 格式不对，找不到 myDocFiles 数组');
     
-    try {
-      originalFileList = new Function('return ' + match[1])();
-    } catch (err) {
-      throw new Error('files.html 里面的内容有语法错误（比如多了变量名，或者没加引号）');
-    }
+    try { originalFileList = new Function('return ' + match[1])(); } catch (err) { throw new Error('files.html 数组语法错误'); }
+
+    const texts = uiTexts[currentLang] || uiTexts['zh-CN'];
 
     if (!originalFileList || originalFileList.length === 0) {
-      docContent.innerHTML = `<h1>欢迎使用 ZDocs</h1><p>你的文件列表是空的。请在 files.html 中添加 .zdoc 文件，并把它们放入 docs 文件夹中。</p>`;
-      sidebarNav.innerHTML = `<div style="color: #94a3b8; font-size: 0.85rem; padding: 12px; text-align: center;">暂无文档</div>`;
+      docContent.innerHTML = `<h1>${texts.welcomeTitle}</h1><p>${texts.welcomeText}</p>`;
+      sidebarNav.innerHTML = `<div style="color: #94a3b8; text-align: center;">${texts.noDocs}</div>`;
       return;
     }
     
-    const promises = originalFileList.map(file => fetch('./docs/' + file).then(r => {
-      if (!r.ok) throw new Error(`找不到 docs/${file}`);
-      return r.text();
-    }));
-    const texts = await Promise.all(promises);
-    
-    docsData = texts.map((text, i) => {
-      let titleMatch = text.match(/title:\s*(.*)/);
-      let title = titleMatch ? titleMatch[1].trim() : originalFileList[i].split('/').pop().replace('.zdoc', '');
-      return { id: `doc-${i}`, title: title, content: text, path: originalFileList[i] };
+    const promises = originalFileList.map(file => {
+      return fetchDocContent(file).then(text => {
+        let titleMatch = text.match(/title:\s*(.*)/);
+        let title = titleMatch ? titleMatch[1].trim() : file.split('/').pop().replace('.zdoc', '');
+        return { id: `doc-${file}`, title: title, content: text, path: file };
+      });
     });
+    const results = await Promise.all(promises);
+    docsData = results;
 
     renderSidebarTree();
-    loadPage(0);
+    handleRoute();
+    
   } catch (e) {
-    sidebarNav.innerHTML = `<div style="color: red; font-size: 0.85rem; padding: 10px; line-height: 1.5;">报错：${e.message}</div>`;
+    sidebarNav.innerHTML = `<div style="color: red; font-size: 0.85rem; padding: 10px;">${(uiTexts[currentLang]||uiTexts['zh-CN']).error}: ${e.message}</div>`;
   }
 }
 
@@ -356,7 +417,7 @@ function renderSidebarTree() {
         a.className = 'nav-item';
         a.textContent = item._name;
         a.dataset.index = item._index;
-        a.onclick = () => { loadPage(item._index); if (window.innerWidth <= 900) toggleSidebar(); };
+        a.onclick = () => { navigateTo(item._index); if (window.innerWidth <= 900) toggleSidebar(); };
         parentEl.appendChild(a);
       }
     }
@@ -366,61 +427,119 @@ function renderSidebarTree() {
 }
 
 function updateActiveNav() {
+  const hash = window.location.hash.replace('#/', '');
   document.querySelectorAll('.nav-item').forEach(el => {
-    if (parseInt(el.dataset.index) === currentIndex) el.classList.add('active');
+    const doc = docsData[el.dataset.index];
+    if (doc && decodeURIComponent(hash) === doc.path) el.classList.add('active');
     else el.classList.remove('active');
   });
 }
 
-function loadPage(index) {
-  if (index < 0 || index >= docsData.length) return;
-  currentIndex = index;
+function navigateTo(index) {
   const doc = docsData[index];
+  if (doc) {
+    window.location.hash = '/' + encodeURIComponent(doc.path);
+  }
+}
+
+function handleRoute() {
+  let hash = window.location.hash;
+  
+  // 核心修复：如果 Hash 不是以 #/ 开头，说明是点击了页内目录（#h-...），不做路由拦截
+  if (hash && !hash.startsWith('#/')) {
+    return;
+  }
+
+  hash = hash.replace('#/', '');
+  if (!hash) {
+    if (docsData.length > 0) navigateTo(0);
+    return;
+  }
+
+  hash = decodeURIComponent(hash);
+  const targetIndex = docsData.findIndex(d => d.path === hash);
+
+  if (targetIndex !== -1) {
+    loadPageContent(targetIndex);
+  } else {
+    docContent.innerHTML = `<h1>404 Not Found</h1><p>找不到文档：${hash}</p>`;
+  }
+}
+
+function loadPageContent(index) {
+  const doc = docsData[index];
+  if (!doc) return;
+  const texts = uiTexts[currentLang] || uiTexts['zh-CN'];
+  
   updateActiveNav();
   docContent.innerHTML = renderZDocs(doc.content);
   
   docContent.querySelectorAll('a.internal-link').forEach(a => {
     a.onclick = (e) => {
       e.preventDefault();
-      const targetHref = a.getAttribute('href');
-      const targetIndex = docsData.findIndex(d => d.path.endsWith(targetHref));
-      if (targetIndex !== -1) { loadPage(targetIndex); if (window.innerWidth <= 900) toggleSidebar(); }
-      else { alert(`找不到目标文档：${targetHref}\n请检查文件名拼写。`); }
+      const targetHref = a.getAttribute('data-zdoc');
+      const targetIdx = docsData.findIndex(d => d.path.endsWith(targetHref));
+      if (targetIdx !== -1) {
+        navigateTo(targetIdx);
+        if (window.innerWidth <= 900) toggleSidebar();
+      } else {
+        alert(`找不到目标文档：${targetHref}`);
+      }
     };
   });
   
+  // 核心修复：右侧目录点击改为 JS 滚动，阻止修改网址
   tocList.innerHTML = '';
   docContent.querySelectorAll('h2, h3').forEach(h => {
     const li = document.createElement('li');
-    li.innerHTML = `<a href="#${h.id}" class="${h.tagName === 'H3' ? 'toc-h3' : ''}">${h.textContent}</a>`;
+    const a = document.createElement('a');
+    a.href = 'javascript:void(0)';
+    a.textContent = h.textContent;
+    a.className = h.tagName === 'H3' ? 'toc-h3' : '';
+    a.onclick = (e) => {
+      e.preventDefault();
+      h.scrollIntoView({ behavior: 'smooth' });
+      document.querySelectorAll('.toc-list a').forEach(el => el.classList.remove('active'));
+      a.classList.add('active');
+    };
+    li.appendChild(a);
     tocList.appendChild(li);
   });
+
   generateFooter(index);
   window.scrollTo(0, 0);
 }
 
 function generateFooter(index) {
   docFooter.innerHTML = '';
+  const texts = uiTexts[currentLang] || uiTexts['zh-CN'];
   if (index > 0) {
     const prev = docsData[index - 1];
     const btn = document.createElement('button');
-    btn.className = 'nav-btn prev'; btn.dataset.target = index - 1;
-    btn.innerHTML = `<span class="nav-label">← 上一篇</span><span class="nav-title">${prev.title}</span>`;
+    btn.className = 'nav-btn prev';
+    btn.dataset.target = index - 1;
+    btn.innerHTML = `<span class="nav-label">${texts.prev}</span><span class="nav-title">${prev.title}</span>`;
     docFooter.appendChild(btn);
-  } else { docFooter.innerHTML += `<div class="nav-btn empty"></div>`; }
+  } else { docFooter.appendChild(document.createElement('div')).className = 'nav-btn empty'; }
+  
   if (index < docsData.length - 1) {
     const next = docsData[index + 1];
     const btn = document.createElement('button');
-    btn.className = 'nav-btn next'; btn.dataset.target = index + 1;
-    btn.innerHTML = `<span class="nav-label">下一篇 →</span><span class="nav-title">${next.title}</span>`;
+    btn.className = 'nav-btn next';
+    btn.dataset.target = index + 1;
+    btn.innerHTML = `<span class="nav-label">${texts.next}</span><span class="nav-title">${next.title}</span>`;
     docFooter.appendChild(btn);
-  } else { docFooter.innerHTML += `<div class="nav-btn empty"></div>`; }
+  } else { docFooter.appendChild(document.createElement('div')).className = 'nav-btn empty'; }
 }
 
 docFooter.addEventListener('click', function(e) {
   const btn = e.target.closest('.nav-btn');
-  if (btn && btn.dataset.target !== undefined) loadPage(parseInt(btn.dataset.target, 10));
+  if (btn && btn.dataset.target !== undefined) {
+    navigateTo(parseInt(btn.dataset.target, 10));
+  }
 });
+
+window.addEventListener('hashchange', handleRoute);
 
 let isComposing = false;
 searchInput.addEventListener('compositionstart', () => { isComposing = true; });
@@ -429,18 +548,22 @@ searchInput.addEventListener('input', (e) => { if (!isComposing) handleSearch(e.
 
 function handleSearch(inputVal) {
   const query = inputVal.trim().toLowerCase();
-  if (!query) { renderSidebarTree(); return; }
+  const texts = uiTexts[currentLang] || uiTexts['zh-CN'];
+  if (!query) { renderSidebarTree(); updateActiveNav(); return; }
+  
   const results = [];
   docsData.forEach(doc => {
     const matchTitle = doc.title.toLowerCase().includes(query);
     const matchContent = doc.content.toLowerCase().includes(query);
     if (matchTitle || matchContent) results.push({ doc, matchTitle, matchContent });
   });
+  
   sidebarNav.innerHTML = '';
   if (results.length === 0) {
     sidebarNav.innerHTML = `<div style="color: #94a3b8; font-size: 0.85rem; padding: 12px; text-align: center;">未找到相关结果</div>`;
     return;
   }
+  
   results.forEach(item => {
     const doc = item.doc; const index = docsData.indexOf(doc);
     const a = document.createElement('a');
@@ -455,15 +578,18 @@ function handleSearch(inputVal) {
       const end = Math.min(doc.content.length, matchIndex + query.length + 25);
       let snippet = doc.content.substring(start, end).replace(/\n/g, ' ');
       if (start > 0) snippet = '...' + snippet;
-      if (end < doc.content.length) snippet = snippet + '...';
+      if (end < doc.content.length) snippet = '...' + snippet;
       a.innerHTML += `<div style="font-size: 0.8rem; color: #94a3b8; font-weight: normal; line-height: 1.4;">${snippet.replace(new RegExp(`(${escapeRegExp(inputVal)})`, 'gi'), '<mark>$1</mark>')}</div>`;
     }
-    a.onclick = () => { loadPage(index); if (window.innerWidth <= 900) toggleSidebar(); };
+    a.onclick = () => { navigateTo(index); if (window.innerWidth <= 900) toggleSidebar(); };
     sidebarNav.appendChild(a);
   });
   updateActiveNav();
 }
+
 function escapeRegExp(string) { return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+updateUI();
 fetchDocs();
 </script>
 </body>
