@@ -6,7 +6,7 @@
 <title>ZDocs</title>
 <style>
   :root { 
-    --sidebar-width: 280px; --toc-width: 220px; 
+    --sidebar-width: 280px; --toc-width: 240px; --top-nav-height: 60px;
     --bg: #ffffff; --text: #334155; --text-title: #0f172a; 
     --border: #e2e8f0; --primary: #3b82f6; 
     --sidebar-bg: #f8fafc; --hover-bg: #f1f5f9; 
@@ -31,44 +31,55 @@
     --table-stripe: #1e293b;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: -apple-system, sans-serif; color: var(--text); background: var(--bg); display: flex; min-height: 100vh; transition: background 0.3s, color 0.3s; }
-  
-  .mobile-header { display: none; position: fixed; top: 0; left: 0; right: 0; height: 56px; background: var(--bg); border-bottom: 1px solid var(--border); align-items: center; padding: 0 16px; z-index: 1000; transition: background 0.3s, border 0.3s; }
-  .mobile-menu-btn { font-size: 1.5rem; background: none; border: none; color: var(--text-title); cursor: pointer; padding: 8px; margin-right: 12px; }
-  .mobile-title { font-weight: bold; font-size: 1.1rem; color: var(--text-title); flex: 1; }
-  .overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1005; opacity: 0; transition: opacity 0.3s; }
-  .overlay.show { display: block; opacity: 1; }
-  
-  .sidebar { width: var(--sidebar-width); background: var(--sidebar-bg); border-right: 1px solid var(--border); position: fixed; top: 0; bottom: 0; left: 0; padding: 24px 16px; overflow-y: auto; user-select: none; z-index: 1010; transition: transform 0.3s ease, background 0.3s; display: flex; flex-direction: column; }
-  
-  .sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding: 0 8px; flex-shrink: 0; gap: 8px; }
-  .site-title { font-size: 1.2rem; color: var(--text-title); font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
-  
-  .toolbar-actions { display: flex; align-items: center; gap: 4px; }
-  .lang-select { border: 1px solid var(--border); background: var(--bg); color: var(--text); border-radius: 4px; padding: 2px 4px; outline: none; font-size: 0.8rem; cursor: pointer; font-weight: bold; }
-  .theme-toggle { background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 4px; border-radius: 6px; }
-  .theme-toggle:hover { background: var(--hover-bg); }
-  
-  .search-container { padding: 0 8px 16px 8px; flex-shrink: 0; }
-  .search-input { width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.9rem; outline: none; background: var(--bg); color: var(--text); transition: all 0.3s; }
-  .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(96,165,250,0.2); }
-  .nav-scroll-area { flex: 1; overflow-y: auto; overflow-x: hidden; }
+  body { font-family: -apple-system, sans-serif; color: var(--text); background: var(--bg); display: flex; flex-direction: column; min-height: 100vh; transition: background 0.3s; }
+
+  /* 顶部导航栏 */
+  .top-navbar { height: var(--top-nav-height); background: var(--bg); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; position: fixed; top: 0; left: 0; right: 0; z-index: 1000; transition: background 0.3s, border 0.3s; }
+  .nav-left { display: flex; align-items: center; gap: 16px; font-weight: bold; font-size: 1.1rem; color: var(--text-title); }
+  .nav-right { display: flex; align-items: center; gap: 16px; }
+  .nav-link { color: var(--text); text-decoration: none; font-size: 0.9rem; font-weight: 500; cursor: pointer; }
+  .nav-link:hover { color: var(--primary); }
+  .theme-toggle { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text); }
+  .lang-select { border: 1px solid var(--border); background: var(--bg); color: var(--text); border-radius: 4px; padding: 4px 8px; outline: none; font-size: 0.85rem; cursor: pointer; }
+
+  /* 页面布局 */
+  .layout-container { display: flex; margin-top: var(--top-nav-height); flex: 1; }
+
+  /* 侧边栏 */
+  .sidebar { width: var(--sidebar-width); background: var(--sidebar-bg); border-right: 1px solid var(--border); position: fixed; top: var(--top-nav-height); bottom: 0; left: 0; padding: 24px 16px; overflow-y: auto; transition: background 0.3s; }
   .nav-group { margin-bottom: 8px; }
-  .nav-folder { display: flex; align-items: center; padding: 8px 12px; font-size: 0.95rem; font-weight: 600; color: var(--text-title); cursor: pointer; border-radius: 6px; }
+  .nav-folder { display: flex; align-items: center; padding: 8px 12px; font-size: 0.9rem; font-weight: 600; color: var(--text-title); cursor: pointer; border-radius: 6px; }
   .nav-folder:hover { background: var(--hover-bg); }
   .folder-arrow { display: inline-block; width: 16px; font-size: 0.75rem; transition: transform 0.2s; text-align: center; margin-right: 6px; color: #64748b; }
   .nav-group.open .folder-arrow { transform: rotate(90deg); }
   .nav-children { display: none; margin-top: 4px; padding-left: 12px; border-left: 1px solid var(--border); margin-left: 16px; }
   .nav-group.open .nav-children { display: block; }
-  .nav-item { display: block; padding: 6px 12px; color: var(--text); text-decoration: none; font-size: 0.9rem; border-radius: 6px; margin-bottom: 2px; cursor: pointer; transition: all 0.2s; }
+  .nav-item { display: block; padding: 6px 12px; color: var(--text); text-decoration: none; font-size: 0.88rem; border-radius: 6px; margin-bottom: 2px; cursor: pointer; transition: all 0.2s; }
   .nav-item:hover { background: var(--hover-bg); }
   .nav-item.active { background: var(--active-bg); color: var(--primary); font-weight: 600; }
-  mark { background-color: var(--mark-bg); color: var(--mark-text); border-radius: 2px; padding: 0 2px; font-weight: bold; }
+
+  /* 主内容区 */
+  .main-wrapper { margin-left: var(--sidebar-width); margin-right: var(--toc-width); flex: 1; padding: 32px 48px; max-width: 900px; }
   
-  .main-content { margin-left: var(--sidebar-width); margin-right: var(--toc-width); flex: 1; padding: 40px 60px; max-width: 800px; }
-  .doc-body h1 { font-size: 2.2rem; color: var(--text-title); margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
-  .doc-body h2 { font-size: 1.5rem; color: var(--text-title); margin: 36px 0 16px; }
-  .doc-body h3 { font-size: 1.2rem; color: var(--text-title); margin: 24px 0 12px; }
+  .breadcrumbs { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #64748b; margin-bottom: 24px; }
+  .breadcrumbs a { color: var(--primary); text-decoration: none; }
+  .breadcrumbs a:hover { text-decoration: underline; }
+  .breadcrumbs span { color: #94a3b8; }
+
+  /* 正文标题样式与悬浮锚点 */
+  .doc-body h1, .doc-body h2, .doc-body h3, .doc-body h4 { position: relative; color: var(--text-title); margin-bottom: 16px; scroll-margin-top: 80px; }
+  .doc-body h1 { font-size: 2.2rem; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
+  .doc-body h2 { font-size: 1.5rem; margin-top: 36px; }
+  .doc-body h3 { font-size: 1.2rem; margin-top: 24px; }
+  .doc-body h4 { font-size: 1rem; margin-top: 20px; }
+
+  /* 鼠标悬浮在标题上时，左侧出现的 # 锚点 */
+  .doc-body h1 .anchor, .doc-body h2 .anchor, .doc-body h3 .anchor, .doc-body h4 .anchor {
+    opacity: 0; position: absolute; left: -24px; top: 50%; transform: translateY(-50%);
+    color: var(--primary); text-decoration: none; font-weight: normal; transition: opacity 0.2s;
+  }
+  .doc-body h1:hover .anchor, .doc-body h2:hover .anchor, .doc-body h3:hover .anchor, .doc-body h4:hover .anchor { opacity: 1; }
+
   .doc-body p { line-height: 1.8; margin-bottom: 16px; }
   .doc-body code { background: var(--code-bg); padding: 2px 6px; border-radius: 4px; color: var(--code-text); font-family: 'SF Mono', monospace; font-size: 0.9em; }
   .doc-body pre { background: var(--pre-bg); color: var(--pre-text); padding: 16px; border-radius: 8px; overflow-x: auto; margin: 20px 0; border: 1px solid var(--border); }
@@ -89,12 +100,18 @@
   .zdoc-details { border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin: 24px 0; background: var(--details-bg); }
   .zdoc-code-group { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin: 24px 0; }
   .zdoc-cg-header { background: var(--sidebar-bg); padding: 10px 16px; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
-  .toc { width: var(--toc-width); position: fixed; top: 0; bottom: 0; right: 0; padding: 40px 20px; }
+
+  /* 右侧目录 */
+  .toc { width: var(--toc-width); position: fixed; top: var(--top-nav-height); bottom: 0; right: 0; padding: 32px 20px; overflow-y: auto; }
+  .toc-title { font-size: 0.8rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
   .toc-list { list-style: none; border-left: 1px solid var(--border); }
   .toc-list a { display: block; padding: 4px 16px; color: #64748b; text-decoration: none; font-size: 0.85rem; border-left: 2px solid transparent; margin-left: -1px; transition: all 0.2s; cursor: pointer; }
   .toc-list a:hover { color: var(--primary); }
   .toc-list a.active { color: var(--primary); border-left-color: var(--primary); font-weight: 500; }
   .toc-list .toc-h3 { padding-left: 32px; }
+  .toc-list .toc-h4 { padding-left: 48px; font-size: 0.8rem; }
+
+  /* 底部翻页 */
   .doc-footer { margin-top: 60px; padding-top: 24px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; gap: 16px; }
   .nav-btn { flex: 1; display: flex; flex-direction: column; padding: 16px; border: 1px solid var(--border); border-radius: 8px; background: transparent; color: var(--text); font-family: inherit; font-size: inherit; cursor: pointer; text-align: left; touch-action: manipulation; transition: all 0.3s; }
   .nav-btn:hover { border-color: var(--primary); background: var(--hover-bg); }
@@ -105,86 +122,63 @@
   .nav-btn .nav-title { font-weight: 600; color: var(--primary); font-size: 0.95rem; }
   
   @media (max-width: 900px) { 
-    .mobile-header { display: flex; }
-    .sidebar { transform: translateX(-100%); }
-    .sidebar.show { transform: translateX(0); }
+    .sidebar { display: none; }
     .toc { display: none; }
-    .main-content { margin: 0; padding: 80px 20px 20px 20px; max-width: 100%; }
+    .main-wrapper { margin-left: 0; margin-right: 0; padding: 20px; }
+    .top-navbar { padding: 0 16px; }
   }
 </style>
 </head>
 <body>
 
-<div class="mobile-header">
-  <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
-  <div class="mobile-title" id="mobile-site-title">📚 ZDocs</div>
-  <select id="mobile-lang-select" class="lang-select" onchange="changeLanguage(this.value)">
-    <option value="zh-CN">简</option>
-    <option value="zh-TW">繁</option>
-    <option value="en">EN</option>
-    <option value="fr">FR</option>
-    <option value="de">DE</option>
-    <option value="ru">RU</option>
-    <option value="es">ES</option>
-  </select>
-  <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+<header class="top-navbar">
+  <div class="nav-left">
+    <span>📚 ZDocs</span>
+  </div>
+  <div class="nav-right">
+    <a href="https://github.com/yangzizhoudiwuxuande/ZDocs" target="_blank" class="nav-link">GitHub</a>
+    <select id="lang-select" class="lang-select" onchange="changeLanguage(this.value)">
+      <option value="zh-CN">简体中文</option>
+      <option value="zh-TW">繁體中文</option>
+      <option value="en">English</option>
+      <option value="fr">Français</option>
+      <option value="de">Deutsch</option>
+      <option value="ru">Русский</option>
+      <option value="es">Español</option>
+    </select>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+  </div>
+</header>
+
+<div class="layout-container">
+  <aside class="sidebar" id="sidebar">
+    <div id="sidebar-nav"><div style="color: #94a3b8; font-size: 0.9rem;">加载中...</div></div>
+  </aside>
+
+  <main class="main-wrapper">
+    <div class="breadcrumbs" id="breadcrumbs"></div>
+    <div id="doc-content" class="doc-body"></div>
+    <div class="doc-footer" id="doc-footer"></div>
+  </main>
+
+  <aside class="toc">
+    <div class="toc-title">本页目录</div>
+    <ul class="toc-list" id="toc-list"></ul>
+  </aside>
 </div>
-
-<div class="overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
-
-<aside class="sidebar" id="sidebar">
-  <div class="sidebar-header">
-    <div class="site-title" id="site-title">📚 加载中...</div>
-    <div class="toolbar-actions">
-      <select id="lang-select" class="lang-select" onchange="changeLanguage(this.value)">
-        <option value="zh-CN">简</option>
-        <option value="zh-TW">繁</option>
-        <option value="en">EN</option>
-        <option value="fr">FR</option>
-        <option value="de">DE</option>
-        <option value="ru">RU</option>
-        <option value="es">ES</option>
-      </select>
-      <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()">🌙</button>
-    </div>
-  </div>
-  <div class="search-container">
-    <input type="text" id="search-input" class="search-input" placeholder="搜索文档..." autocomplete="off">
-  </div>
-  <div class="nav-scroll-area" id="sidebar-nav">
-    <div style="color: #94a3b8; font-size: 0.9rem; padding-left: 8px;">加载目录中...</div>
-  </div>
-</aside>
-
-<main class="main-content">
-  <div id="doc-content" class="doc-body"></div>
-  <div class="doc-footer" id="doc-footer"></div>
-</main>
-
-<aside class="toc">
-  <div class="toc-title" id="toc-title">本页目录</div>
-  <ul class="toc-list" id="toc-list"></ul>
-</aside>
 
 <script>
 const uiTexts = {
-  'zh-CN': { search: '🔍 搜索文档...', toc: '本页目录', prev: '← 上一篇', next: '下一篇 →', noDocs: '暂无文档', error: '报错', welcomeTitle: '欢迎使用 ZDocs', welcomeText: '你的文件列表是空的。' },
-  'zh-TW': { search: '🔍 搜尋文件...', toc: '本頁目錄', prev: '← 上一篇', next: '下一篇 →', noDocs: '暫無文件', error: '報錯', welcomeTitle: '歡迎使用 ZDocs', welcomeText: '你的文件列表是空的。' },
-  'en': { search: '🔍 Search docs...', toc: 'On This Page', prev: '← Previous', next: 'Next →', noDocs: 'No documents', error: 'Error', welcomeTitle: 'Welcome to ZDocs', welcomeText: 'Your document list is empty.' },
-  'fr': { search: '🔍 Rechercher...', toc: 'Sur cette page', prev: '← Précédent', next: 'Suivant →', noDocs: 'Aucun document', error: 'Erreur', welcomeTitle: 'Bienvenue sur ZDocs', welcomeText: 'Votre liste de documents est vide.' },
-  'de': { search: '🔍 Suchen...', toc: 'Auf dieser Seite', prev: '← Zurück', next: 'Weiter →', noDocs: 'Keine Dokumente', error: 'Fehler', welcomeTitle: 'Willkommen bei ZDocs', welcomeText: 'Ihre Dokumentenliste ist leer.' },
-  'ru': { search: '🔍 Поиск...', toc: 'Содержание', prev: '← Назад', next: 'Вперед →', noDocs: 'Нет документов', error: 'Ошибка', welcomeTitle: 'Добро пожаловать в ZDocs', welcomeText: 'Ваш список документов пуст.' },
-  'es': { search: '🔍 Buscar...', toc: 'En esta página', prev: '← Anterior', next: 'Siguiente →', noDocs: 'Sin documentos', error: 'Error', welcomeTitle: 'Bienvenido a ZDocs', welcomeText: 'Tu lista de documentos está vacía.' }
+  'zh-CN': { toc: '本页目录', prev: '← 上一篇', next: '下一篇 →', noDocs: '暂无文档', welcomeTitle: '欢迎使用 ZDocs', welcomeText: '你的文件列表是空的。' },
+  'en': { toc: 'On This Page', prev: '← Previous', next: 'Next →', noDocs: 'No documents', welcomeTitle: 'Welcome to ZDocs', welcomeText: 'Your document list is empty.' }
 };
 
 let currentLang = localStorage.getItem('zdocs-lang') || 'zh-CN';
 
 function updateUI() {
   const texts = uiTexts[currentLang] || uiTexts['zh-CN'];
-  document.getElementById('search-input').placeholder = texts.search;
-  document.getElementById('toc-title').textContent = texts.toc;
+  document.querySelector('.toc-title').textContent = texts.toc;
   document.getElementById('lang-select').value = currentLang;
-  document.getElementById('mobile-lang-select').value = currentLang;
 }
 
 function initTheme() {
@@ -200,8 +194,7 @@ function toggleTheme() {
   updateThemeIcon(newTheme);
 }
 function updateThemeIcon(theme) {
-  const icons = document.querySelectorAll('.theme-toggle');
-  icons.forEach(btn => { btn.textContent = theme === 'dark' ? '☀️' : '🌙'; });
+  document.querySelectorAll('.theme-toggle').forEach(btn => { btn.textContent = theme === 'dark' ? '☀️' : '🌙'; });
 }
 initTheme();
 
@@ -270,10 +263,27 @@ function renderZDocs(text) {
       continue;
     }
 
-    if (line.startsWith('//// ')) html.push(`<h4>${parseInline(line.substring(5))}</h4>`);
-    else if (line.startsWith('/// ')) { let t = parseInline(line.substring(4)); let id = 'h-' + t.replace(/\s+/g, '-').toLowerCase(); html.push(`<h3 id="${id}">${t}</h3>`); }
-    else if (line.startsWith('// ')) { let t = parseInline(line.substring(3)); let id = 'h-' + t.replace(/\s+/g, '-').toLowerCase(); html.push(`<h2 id="${id}">${t}</h2>`); }
-    else if (line.startsWith('/ ')) html.push(`<h1>${parseInline(line.substring(2))}</h1>`);
+    // 修复：一、二、三、四级标题都生成 id，并加入 # 锚点
+    if (line.startsWith('//// ')) { 
+      let t = parseInline(line.substring(5)); 
+      let id = 'h-' + t.replace(/\s+/g, '-').toLowerCase(); 
+      html.push(`<h4 id="${id}"><a class="anchor" href="#${id}">#</a>${t}</h4>`); 
+    }
+    else if (line.startsWith('/// ')) { 
+      let t = parseInline(line.substring(4)); 
+      let id = 'h-' + t.replace(/\s+/g, '-').toLowerCase(); 
+      html.push(`<h3 id="${id}"><a class="anchor" href="#${id}">#</a>${t}</h3>`); 
+    }
+    else if (line.startsWith('// ')) { 
+      let t = parseInline(line.substring(3)); 
+      let id = 'h-' + t.replace(/\s+/g, '-').toLowerCase(); 
+      html.push(`<h2 id="${id}"><a class="anchor" href="#${id}">#</a>${t}</h2>`); 
+    }
+    else if (line.startsWith('/ ')) {
+      let t = parseInline(line.substring(2)); 
+      let id = 'h-' + t.replace(/\s+/g, '-').toLowerCase(); 
+      html.push(`<h1 id="${id}"><a class="anchor" href="#${id}">#</a>${t}</h1>`); 
+    }
     else if (line.startsWith('! ')) {
       let items = []; while (i < lines.length && lines[i].startsWith('! ')) { items.push(`<li>${parseInline(lines[i].substring(2))}</li>`); i++; }
       html.push(`<ul>${items.join('')}</ul>`); continue;
@@ -293,19 +303,11 @@ const sidebarNav = document.getElementById('sidebar-nav');
 const docContent = document.getElementById('doc-content');
 const tocList = document.getElementById('toc-list');
 const docFooter = document.getElementById('doc-footer');
-const siteTitleEl = document.getElementById('site-title');
-const searchInput = document.getElementById('search-input');
+const siteTitleEl = document.querySelector('.nav-left');
+const breadcrumbsEl = document.getElementById('breadcrumbs');
 
 let docsData = [];
 let originalFileList = [];
-
-function toggleSidebar() {
-  const sidebar = document.getElementById('sidebar');
-  const overlay = document.getElementById('sidebar-overlay');
-  const isOpen = sidebar.classList.contains('show');
-  if (isOpen) { sidebar.classList.remove('show'); overlay.classList.remove('show'); }
-  else { sidebar.classList.add('show'); overlay.classList.add('show'); }
-}
 
 async function changeLanguage(lang) {
   if (lang === currentLang) return;
@@ -337,29 +339,20 @@ async function fetchDocs() {
       if (titleRes.ok) {
         const titleText = await titleRes.text();
         const titleMatch = titleText.match(/const\s+siteTitle\s*=\s*["']([^"']+)["']/);
-        if (titleMatch) {
-          siteTitleEl.textContent = titleMatch[1];
-          document.getElementById('mobile-site-title').textContent = titleMatch[1];
-        }
+        if (titleMatch) siteTitleEl.innerHTML = `📚 ${titleMatch[1]}`;
       }
-    } catch(e) { 
-      siteTitleEl.textContent = "📚 ZDocs"; 
-      document.getElementById('mobile-site-title').textContent = "📚 ZDocs"; 
-    }
+    } catch(e) { siteTitleEl.innerHTML = "📚 ZDocs"; }
 
     const res = await fetch('./files.html');
     if (!res.ok) throw new Error('缺少 files.html');
     const htmlText = await res.text();
     const match = htmlText.match(/const\s+myDocFiles\s*=\s*(\[[\s\S]*?\]);?/);
-    if (!match) throw new Error('files.html 格式不对，找不到 myDocFiles 数组');
+    if (!match) throw new Error('files.html 格式不对');
     
     try { originalFileList = new Function('return ' + match[1])(); } catch (err) { throw new Error('files.html 数组语法错误'); }
 
-    const texts = uiTexts[currentLang] || uiTexts['zh-CN'];
-
     if (!originalFileList || originalFileList.length === 0) {
-      docContent.innerHTML = `<h1>${texts.welcomeTitle}</h1><p>${texts.welcomeText}</p>`;
-      sidebarNav.innerHTML = `<div style="color: #94a3b8; text-align: center;">${texts.noDocs}</div>`;
+      docContent.innerHTML = `<h1>欢迎使用 ZDocs</h1><p>文件列表为空。</p>`;
       return;
     }
     
@@ -370,21 +363,19 @@ async function fetchDocs() {
         return { id: `doc-${file}`, title: title, content: text, path: file };
       });
     });
-    const results = await Promise.all(promises);
-    docsData = results;
+    docsData = await Promise.all(promises);
 
     renderSidebarTree();
     handleRoute();
     
   } catch (e) {
-    sidebarNav.innerHTML = `<div style="color: red; font-size: 0.85rem; padding: 10px;">${(uiTexts[currentLang]||uiTexts['zh-CN']).error}: ${e.message}</div>`;
+    sidebarNav.innerHTML = `<div style="color: red; font-size: 0.85rem;">报错：${e.message}</div>`;
   }
 }
 
 function renderSidebarTree() {
   sidebarNav.innerHTML = '';
   const tree = {};
-
   originalFileList.forEach((path, index) => {
     const parts = path.split('/');
     let current = tree;
@@ -392,32 +383,24 @@ function renderSidebarTree() {
       if (!current[parts[i]]) current[parts[i]] = { _isFolder: true, _children: {} };
       current = current[parts[i]]._children;
     }
-    const fileName = parts[parts.length - 1];
-    current[fileName] = { _isFolder: false, _index: index, _name: docsData[index].title };
+    current[parts[parts.length - 1]] = { _isFolder: false, _index: index, _name: docsData[index].title };
   });
 
   function buildDOM(node, parentEl) {
     for (const key in node) {
       const item = node[key];
       if (item._isFolder) {
-        const groupEl = document.createElement('div');
-        groupEl.className = 'nav-group open';
-        const folderEl = document.createElement('div');
-        folderEl.className = 'nav-folder';
+        const groupEl = document.createElement('div'); groupEl.className = 'nav-group open';
+        const folderEl = document.createElement('div'); folderEl.className = 'nav-folder';
         folderEl.innerHTML = `<span class="folder-arrow">❯</span>${key}`;
         folderEl.onclick = () => groupEl.classList.toggle('open');
-        const childrenEl = document.createElement('div');
-        childrenEl.className = 'nav-children';
-        groupEl.appendChild(folderEl);
-        groupEl.appendChild(childrenEl);
-        parentEl.appendChild(groupEl);
+        const childrenEl = document.createElement('div'); childrenEl.className = 'nav-children';
+        groupEl.appendChild(folderEl); groupEl.appendChild(childrenEl); parentEl.appendChild(groupEl);
         buildDOM(item._children, childrenEl);
       } else {
-        const a = document.createElement('a');
-        a.className = 'nav-item';
-        a.textContent = item._name;
-        a.dataset.index = item._index;
-        a.onclick = () => { navigateTo(item._index); if (window.innerWidth <= 900) toggleSidebar(); };
+        const a = document.createElement('a'); a.className = 'nav-item';
+        a.textContent = item._name; a.dataset.index = item._index;
+        a.onclick = () => { navigateTo(item._index); };
         parentEl.appendChild(a);
       }
     }
@@ -437,18 +420,14 @@ function updateActiveNav() {
 
 function navigateTo(index) {
   const doc = docsData[index];
-  if (doc) {
-    window.location.hash = '/' + encodeURIComponent(doc.path);
-  }
+  if (doc) window.location.hash = '/' + encodeURIComponent(doc.path);
 }
 
 function handleRoute() {
   let hash = window.location.hash;
   
-  // 核心修复：如果 Hash 不是以 #/ 开头，说明是点击了页内目录（#h-...），不做路由拦截
-  if (hash && !hash.startsWith('#/')) {
-    return;
-  }
+  // 如果只是页内锚点跳转 (#h-xxx)，不触发文档切换
+  if (hash && !hash.startsWith('#/')) return;
 
   hash = hash.replace('#/', '');
   if (!hash) {
@@ -469,33 +448,43 @@ function handleRoute() {
 function loadPageContent(index) {
   const doc = docsData[index];
   if (!doc) return;
-  const texts = uiTexts[currentLang] || uiTexts['zh-CN'];
   
   updateActiveNav();
   docContent.innerHTML = renderZDocs(doc.content);
   
+  // 更新面包屑
+  const parts = doc.path.split('/');
+  let crumbHtml = `<a href="javascript:void(0)" onclick="navigateTo(${index})">🏠</a>`;
+  if (parts.length > 1) {
+    for (let i = 0; i < parts.length - 1; i++) {
+      crumbHtml += ` <span>/</span> <span>${parts[i]}</span>`;
+    }
+  }
+  crumbHtml += ` <span>/</span> <span style="color:var(--text-title); font-weight:500;">${doc.title}</span>`;
+  breadcrumbsEl.innerHTML = crumbHtml;
+
+  // 内部链接拦截
   docContent.querySelectorAll('a.internal-link').forEach(a => {
     a.onclick = (e) => {
       e.preventDefault();
       const targetHref = a.getAttribute('data-zdoc');
       const targetIdx = docsData.findIndex(d => d.path.endsWith(targetHref));
-      if (targetIdx !== -1) {
-        navigateTo(targetIdx);
-        if (window.innerWidth <= 900) toggleSidebar();
-      } else {
-        alert(`找不到目标文档：${targetHref}`);
-      }
+      if (targetIdx !== -1) navigateTo(targetIdx);
+      else alert(`找不到目标文档：${targetHref}`);
     };
   });
   
-  // 核心修复：右侧目录点击改为 JS 滚动，阻止修改网址
+  // 更新 TOC (现在抓取 h2, h3, h4)
   tocList.innerHTML = '';
-  docContent.querySelectorAll('h2, h3').forEach(h => {
+  docContent.querySelectorAll('h2, h3, h4').forEach(h => {
     const li = document.createElement('li');
     const a = document.createElement('a');
+    // 点击目录时，平滑滚动且不改变路由状态
     a.href = 'javascript:void(0)';
-    a.textContent = h.textContent;
-    a.className = h.tagName === 'H3' ? 'toc-h3' : '';
+    a.textContent = h.textContent.replace('#', '').trim();
+    if (h.tagName === 'H3') a.className = 'toc-h3';
+    if (h.tagName === 'H4') a.className = 'toc-h4';
+    
     a.onclick = (e) => {
       e.preventDefault();
       h.scrollIntoView({ behavior: 'smooth' });
@@ -515,18 +504,14 @@ function generateFooter(index) {
   const texts = uiTexts[currentLang] || uiTexts['zh-CN'];
   if (index > 0) {
     const prev = docsData[index - 1];
-    const btn = document.createElement('button');
-    btn.className = 'nav-btn prev';
-    btn.dataset.target = index - 1;
+    const btn = document.createElement('button'); btn.className = 'nav-btn prev'; btn.dataset.target = index - 1;
     btn.innerHTML = `<span class="nav-label">${texts.prev}</span><span class="nav-title">${prev.title}</span>`;
     docFooter.appendChild(btn);
   } else { docFooter.appendChild(document.createElement('div')).className = 'nav-btn empty'; }
   
   if (index < docsData.length - 1) {
     const next = docsData[index + 1];
-    const btn = document.createElement('button');
-    btn.className = 'nav-btn next';
-    btn.dataset.target = index + 1;
+    const btn = document.createElement('button'); btn.className = 'nav-btn next'; btn.dataset.target = index + 1;
     btn.innerHTML = `<span class="nav-label">${texts.next}</span><span class="nav-title">${next.title}</span>`;
     docFooter.appendChild(btn);
   } else { docFooter.appendChild(document.createElement('div')).className = 'nav-btn empty'; }
@@ -534,60 +519,10 @@ function generateFooter(index) {
 
 docFooter.addEventListener('click', function(e) {
   const btn = e.target.closest('.nav-btn');
-  if (btn && btn.dataset.target !== undefined) {
-    navigateTo(parseInt(btn.dataset.target, 10));
-  }
+  if (btn && btn.dataset.target !== undefined) navigateTo(parseInt(btn.dataset.target, 10));
 });
 
 window.addEventListener('hashchange', handleRoute);
-
-let isComposing = false;
-searchInput.addEventListener('compositionstart', () => { isComposing = true; });
-searchInput.addEventListener('compositionend', (e) => { isComposing = false; handleSearch(e.target.value); });
-searchInput.addEventListener('input', (e) => { if (!isComposing) handleSearch(e.target.value); });
-
-function handleSearch(inputVal) {
-  const query = inputVal.trim().toLowerCase();
-  const texts = uiTexts[currentLang] || uiTexts['zh-CN'];
-  if (!query) { renderSidebarTree(); updateActiveNav(); return; }
-  
-  const results = [];
-  docsData.forEach(doc => {
-    const matchTitle = doc.title.toLowerCase().includes(query);
-    const matchContent = doc.content.toLowerCase().includes(query);
-    if (matchTitle || matchContent) results.push({ doc, matchTitle, matchContent });
-  });
-  
-  sidebarNav.innerHTML = '';
-  if (results.length === 0) {
-    sidebarNav.innerHTML = `<div style="color: #94a3b8; font-size: 0.85rem; padding: 12px; text-align: center;">未找到相关结果</div>`;
-    return;
-  }
-  
-  results.forEach(item => {
-    const doc = item.doc; const index = docsData.indexOf(doc);
-    const a = document.createElement('a');
-    a.className = 'nav-item'; a.dataset.index = index;
-    let displayTitle = doc.title;
-    if (item.matchTitle) displayTitle = doc.title.replace(new RegExp(`(${escapeRegExp(inputVal)})`, 'gi'), '<mark>$1</mark>');
-    a.innerHTML = `<div style="font-weight: 600; margin-bottom: 4px;">${displayTitle}</div>`;
-    if (item.matchContent) {
-      const contentLower = doc.content.toLowerCase();
-      const matchIndex = contentLower.indexOf(query);
-      const start = Math.max(0, matchIndex - 15);
-      const end = Math.min(doc.content.length, matchIndex + query.length + 25);
-      let snippet = doc.content.substring(start, end).replace(/\n/g, ' ');
-      if (start > 0) snippet = '...' + snippet;
-      if (end < doc.content.length) snippet = '...' + snippet;
-      a.innerHTML += `<div style="font-size: 0.8rem; color: #94a3b8; font-weight: normal; line-height: 1.4;">${snippet.replace(new RegExp(`(${escapeRegExp(inputVal)})`, 'gi'), '<mark>$1</mark>')}</div>`;
-    }
-    a.onclick = () => { navigateTo(index); if (window.innerWidth <= 900) toggleSidebar(); };
-    sidebarNav.appendChild(a);
-  });
-  updateActiveNav();
-}
-
-function escapeRegExp(string) { return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 
 updateUI();
 fetchDocs();
